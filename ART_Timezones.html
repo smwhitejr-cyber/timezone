@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ART Time Zones</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /* ── Base ── */
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      transition: background 0.3s;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      margin: 24px;
+      padding: 28px 32px 32px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    /* ── Theme toggle ── */
+    #theme-toggle {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      padding: 0;
+    }
+    #theme-toggle:hover {
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.36);
+    }
+
+    /* ── Analog clock strip ── */
+    .clock-strip {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .clock-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .clock-face    { fill: rgba(255,255,255,0.06); }
+    .clock-tick-major { stroke: rgba(255,255,255,0.5); }
+    .clock-tick-minor { stroke: rgba(255,255,255,0.25); }
+    .clock-hand-h  { stroke: #fff; }
+    .clock-hand-m  { stroke: #fff; }
+
+    .clock-flag {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .clock-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .clock-digital {
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 0.3px;
+    }
+
+    .clock-date {
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 500;
+    }
+
+    /* ── Headings ── */
+    h2 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
+      padding-right: 48px; /* clear theme toggle */
+    }
+
+    .muted {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .muted strong { color: rgba(255,255,255,0.75); }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin: 20px 0;
+    }
+
+    /* ── Input rows ── */
+    .row {
+      display: grid;
+      grid-template-columns: 120px 1fr 1fr 36px;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .row:first-of-type { margin-top: 0; }
+
+    .zone-label {
+      font-weight: 600;
+      font-size: 15px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+    }
+
+    .flag { font-size: 18px; margin-right: 6px; }
+
+    /* ── DST badge ── */
+    .dst-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.5px;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    /* ── Date/Time inputs ── */
+    input[type="date"], input[type="time"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      color-scheme: dark;
+    }
+    input[type="date"]:focus, input[type="time"]:focus {
+      border-color: #4e9af1;
+      background: rgba(78,154,241,0.12);
+    }
+    .row-et    input:focus { border-color: #facc15; background: rgba(250,204,21,0.12); }
+    .row-ct    input:focus { border-color: #f87c52; background: rgba(248,124,82,0.12); }
+    .row-bris  input:focus { border-color: #52d18e; background: rgba(82,209,142,0.12); }
+    .row-syd   input:focus { border-color: #a78bfa; background: rgba(167,139,250,0.12); }
+    .row-ind   input:focus { border-color: #ff9933; background: rgba(255,153,51,0.12); }
+
+    .accent-et   { color: #facc15; }
+    .accent-ct   { color: #f87c52; }
+    .accent-bris { color: #52d18e; }
+    .accent-syd  { color: #a78bfa; }
+    .accent-ind  { color: #ff9933; }
+
+    /* ── Copy button ── */
+    .copy-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.9);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .copy-btn.copied {
+      color: #52d18e;
+      border-color: rgba(82,209,142,0.5);
+      background: rgba(82,209,142,0.1);
+    }
+
+    /* ── Footer ── */
+    .footer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    #reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.85);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #reset-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    kbd {
+      font-size: 11px;
+      font-family: inherit;
+      padding: 3px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ══════════════════════════════════════════
+       LIGHT MODE
+    ══════════════════════════════════════════ */
+    body.light {
+      background: linear-gradient(135deg, #dce8f5 0%, #e8f0fe 50%, #d4e4f7 100%);
+    }
+    body.light .card {
+      background: rgba(255,255,255,0.88);
+      border-color: rgba(0,0,0,0.1);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    }
+    body.light #theme-toggle {
+      border-color: rgba(0,0,0,0.18);
+      background: rgba(0,0,0,0.05);
+      color: rgba(0,0,0,0.65);
+    }
+    body.light #theme-toggle:hover {
+      background: rgba(0,0,0,0.1);
+    }
+    body.light h2        { color: #1a1a2e; }
+    body.light .muted    { color: rgba(0,0,0,0.5); }
+    body.light .muted strong { color: rgba(0,0,0,0.72); }
+    body.light .divider  { border-top-color: rgba(0,0,0,0.08); }
+    body.light .zone-label { color: #1a1a2e; }
+    body.light .dst-badge {
+      background: rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.52);
+    }
+    body.light input[type="date"],
+    body.light input[type="time"] {
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.14);
+      color: #1a1a2e;
+      color-scheme: light;
+    }
+    body.light .copy-btn {
+      border-color: rgba(0,0,0,0.14);
+      background: rgba(0,0,0,0.04);
+      color: rgba(0,0,0,0.45);
+    }
+    body.light .copy-btn:hover {
+      background: rgba(0,0,0,0.09);
+      color: rgba(0,0,0,0.8);
+      border-color: rgba(0,0,0,0.25);
+    }
+    body.light .copy-btn.copied {
+      color: #2a9d5c;
+      border-color: rgba(42,157,92,0.5);
+      background: rgba(42,157,92,0.08);
+    }
+    body.light #reset-btn {
+      border-color: rgba(0,0,0,0.18);
+      background: rgba(0,0,0,0.05);
+      color: rgba(0,0,0,0.75);
+    }
+    body.light #reset-btn:hover {
+      background: rgba(0,0,0,0.1);
+      border-color: rgba(0,0,0,0.28);
+    }
+    body.light kbd {
+      border-color: rgba(0,0,0,0.18);
+      background: rgba(0,0,0,0.05);
+      color: rgba(0,0,0,0.38);
+    }
+    body.light .clock-label   { color: rgba(0,0,0,0.48); }
+    body.light .clock-digital { color: rgba(0,0,0,0.72); }
+    body.light .clock-date    { color: rgba(0,0,0,0.42); }
+    body.light .clock-face    { fill: rgba(0,0,0,0.04); }
+    body.light .clock-tick-major { stroke: rgba(0,0,0,0.38); }
+    body.light .clock-tick-minor { stroke: rgba(0,0,0,0.18); }
+    body.light .clock-hand-h  { stroke: #1a1a2e; }
+    body.light .clock-hand-m  { stroke: #1a1a2e; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark mode">☀</button>
+
+    <!-- Analog clock strip -->
+    <div class="clock-strip" id="clock-strip"></div>
+
+    <h2>Time Zone Sync</h2>
+    <div class="muted">
+      Edit <strong>any</strong> field — the others update instantly. DST handled correctly.
+      <br>Brisbane is always AEST (no DST); Sydney switches between AEDT/AEST.
+    </div>
+
+    <hr class="divider">
+
+    <div class="row row-syd">
+      <label class="zone-label">
+        <div><span class="flag">🇦🇺</span><span class="accent-syd">Sydney</span></div>
+        <span class="dst-badge" id="dst-syd"></span>
+      </label>
+      <input type="date" id="syd-date">
+      <input type="time" id="syd-time">
+      <button class="copy-btn" onclick="copyTime('syd', this)" title="Copy Sydney time">⎘</button>
+    </div>
+
+    <div class="row row-bris">
+      <label class="zone-label">
+        <div><span class="flag">🇦🇺</span><span class="accent-bris">Brisbane</span></div>
+        <span class="dst-badge" id="dst-bris"></span>
+      </label>
+      <input type="date" id="bris-date">
+      <input type="time" id="bris-time">
+      <button class="copy-btn" onclick="copyTime('bris', this)" title="Copy Brisbane time">⎘</button>
+    </div>
+
+    <div class="row row-ind">
+      <label class="zone-label">
+        <div><span class="flag">🇮🇳</span><span class="accent-ind">India</span></div>
+        <span class="dst-badge" id="dst-ind"></span>
+      </label>
+      <input type="date" id="ind-date">
+      <input type="time" id="ind-time">
+      <button class="copy-btn" onclick="copyTime('ind', this)" title="Copy India time">⎘</button>
+    </div>
+
+    <div class="row row-et">
+      <label class="zone-label">
+        <div><span class="flag">🇺🇸</span><span class="accent-et">Eastern</span></div>
+        <span class="dst-badge" id="dst-et"></span>
+      </label>
+      <input type="date" id="et-date">
+      <input type="time" id="et-time">
+      <button class="copy-btn" onclick="copyTime('et', this)" title="Copy Eastern time">⎘</button>
+    </div>
+
+    <div class="row row-ct">
+      <label class="zone-label">
+        <div><span class="flag">🇺🇸</span><span class="accent-ct">Central</span></div>
+        <span class="dst-badge" id="dst-ct"></span>
+      </label>
+      <input type="date" id="ct-date">
+      <input type="time" id="ct-time">
+      <button class="copy-btn" onclick="copyTime('ct', this)" title="Copy Central time">⎘</button>
+    </div>
+
+    <div class="footer-row">
+      <button id="reset-btn" onclick="resetToNow()">⟳ Reset to Current Time</button>
+      <kbd title="Keyboard shortcut">R</kbd>
+    </div>
+
+  </div>
+
+<script>
+const ZONES = {
+  syd:  "Australia/Sydney",
+  bris: "Australia/Brisbane",
+  ind:  "Asia/Kolkata",
+  et:   "America/New_York",
+  ct:   "America/Chicago"
+};
+
+const CLOCK_CONFIGS = [
+  { key: "syd",  label: "Sydney",   color: "#a78bfa", flag: "🇦🇺" },
+  { key: "bris", label: "Brisbane", color: "#52d18e", flag: "🇦🇺" },
+  { key: "ind",  label: "India",    color: "#ff9933", flag: "🇮🇳" },
+  { key: "et",   label: "Eastern",  color: "#facc15", flag: "🇺🇸" },
+  { key: "ct",   label: "Central",  color: "#f87c52", flag: "🇺🇸" },
+];
+
+// ── Analog clock construction ──────────────────────────────────────────────
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const R = 36, SZ = 80, CX = SZ / 2, CY = SZ / 2;
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function buildClock(cfg) {
+  const wrap = document.createElement("div");
+  wrap.className = "clock-item";
+
+  const svg = svgEl("svg", { width: SZ, height: SZ, viewBox: `0 0 ${SZ} ${SZ}` });
+
+  // Face
+  svg.appendChild(svgEl("circle", {
+    cx: CX, cy: CY, r: R,
+    class: "clock-face",
+    stroke: cfg.color, "stroke-width": "1.5"
+  }));
+
+  // Hour ticks
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * 2 * Math.PI;
+    const inner = i % 3 === 0 ? R - 7 : R - 5;
+    svg.appendChild(svgEl("line", {
+      class: i % 3 === 0 ? "clock-tick-major" : "clock-tick-minor",
+      x1: CX + inner * Math.sin(a),  y1: CY - inner * Math.cos(a),
+      x2: CX + R     * Math.sin(a),  y2: CY - R     * Math.cos(a),
+      "stroke-width": i % 3 === 0 ? "2" : "1",
+      "stroke-linecap": "round"
+    }));
+  }
+
+  // Hour hand
+  const hHand = svgEl("line", {
+    class: "clock-hand-h",
+    x1: CX, y1: CY, x2: CX, y2: CY - 20,
+    "stroke-width": "2.5", "stroke-linecap": "round"
+  });
+  hHand.id = `clk-h-${cfg.key}`;
+  svg.appendChild(hHand);
+
+  // Minute hand
+  const mHand = svgEl("line", {
+    class: "clock-hand-m",
+    x1: CX, y1: CY, x2: CX, y2: CY - 28,
+    "stroke-width": "1.5", "stroke-linecap": "round"
+  });
+  mHand.id = `clk-m-${cfg.key}`;
+  svg.appendChild(mHand);
+
+  // Second hand (accent colored — keeps inline stroke for per-clock color)
+  const sHand = svgEl("line", {
+    x1: CX, y1: CY + 8, x2: CX, y2: CY - 31,
+    stroke: cfg.color, "stroke-width": "1", "stroke-linecap": "round"
+  });
+  sHand.id = `clk-s-${cfg.key}`;
+  svg.appendChild(sHand);
+
+  // Center cap
+  svg.appendChild(svgEl("circle", { cx: CX, cy: CY, r: "3", fill: cfg.color }));
+
+  // Flag
+  const flagEl = document.createElement("div");
+  flagEl.className = "clock-flag";
+  flagEl.textContent = cfg.flag;
+
+  // Zone label
+  const labelEl = document.createElement("div");
+  labelEl.className = "clock-label";
+  labelEl.textContent = cfg.label;
+  labelEl.style.color = cfg.color;
+
+  // Live digital readout
+  const digitalEl = document.createElement("div");
+  digitalEl.className = "clock-digital";
+  digitalEl.id = `clk-digital-${cfg.key}`;
+  digitalEl.style.color = cfg.color;
+  digitalEl.textContent = "–:––:––";
+
+  // Date line
+  const dateEl = document.createElement("div");
+  dateEl.className = "clock-date";
+  dateEl.id = `clk-date-${cfg.key}`;
+  dateEl.textContent = "––– ––– ––";
+
+  wrap.appendChild(svg);
+  wrap.appendChild(flagEl);
+  wrap.appendChild(labelEl);
+  wrap.appendChild(digitalEl);
+  wrap.appendChild(dateEl);
+  return wrap;
+}
+
+// Build all clocks into the strip
+CLOCK_CONFIGS.forEach(cfg => {
+  document.getElementById("clock-strip").appendChild(buildClock(cfg));
+});
+
+// ── Clock hand + readout update ────────────────────────────────────────────
+
+function setHand(id, angleDeg) {
+  const el = document.getElementById(id);
+  if (el) el.setAttribute("transform", `rotate(${angleDeg}, ${CX}, ${CY})`);
+}
+
+function getTzAbbr(tz, instant) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, timeZoneName: "short"
+  }).formatToParts(instant);
+  return parts.find(p => p.type === "timeZoneName")?.value ?? "";
+}
+
+function updateClocksFromInstant(instant) {
+  CLOCK_CONFIGS.forEach(cfg => {
+    const p = partsInZone(instant, ZONES[cfg.key]);
+
+    // Hands
+    const hAngle = ((p.hour % 12) + p.minute / 60 + p.second / 3600) / 12 * 360;
+    const mAngle = (p.minute + p.second / 60) / 60 * 360;
+    const sAngle = p.second / 60 * 360;
+    setHand(`clk-h-${cfg.key}`, hAngle);
+    setHand(`clk-m-${cfg.key}`, mAngle);
+    setHand(`clk-s-${cfg.key}`, sAngle);
+
+    // Digital readout (12h AM/PM)
+    const digitalEl = document.getElementById(`clk-digital-${cfg.key}`);
+    if (digitalEl) {
+      const hh12 = p.hour % 12 || 12;
+      const ampm = p.hour < 12 ? "AM" : "PM";
+      digitalEl.textContent =
+        `${hh12}:${String(p.minute).padStart(2,"0")}:${String(p.second).padStart(2,"0")} ${ampm}`;
+    }
+
+    // Date line
+    const dateEl = document.getElementById(`clk-date-${cfg.key}`);
+    if (dateEl) {
+      dateEl.textContent = new Intl.DateTimeFormat("en-US", {
+        timeZone: ZONES[cfg.key],
+        weekday: "short", month: "short", day: "numeric"
+      }).format(instant);
+    }
+
+    // DST badge in input rows
+    const dstEl = document.getElementById(`dst-${cfg.key}`);
+    if (dstEl) dstEl.textContent = getTzAbbr(ZONES[cfg.key], instant);
+  });
+}
+
+// ── Core time logic ────────────────────────────────────────────────────────
+
+let isSyncing = false;
+let currentInstant = new Date();
+let liveTimer = null;
+
+function partsInZone(date, tz) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false
+  }).formatToParts(date).reduce((a, p) => (a[p.type] = p.value, a), {});
+  return {
+    year: +parts.year, month: +parts.month, day: +parts.day,
+    hour: +parts.hour, minute: +parts.minute, second: +parts.second
+  };
+}
+
+function tzOffsetMs(tz, instant) {
+  const z = partsInZone(instant, tz);
+  const asUTC = Date.UTC(z.year, z.month - 1, z.day, z.hour, z.minute, z.second);
+  return asUTC - instant.getTime();
+}
+
+function zonedWallTimeToInstant(dateStr, timeStr, tz) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const [hh, mm] = timeStr.split(":").map(Number);
+  const guess = new Date(Date.UTC(y, m - 1, d, hh, mm, 0));
+  const o1 = tzOffsetMs(tz, guess);
+  let instant = new Date(guess.getTime() - o1);
+  const o2 = tzOffsetMs(tz, instant);
+  if (o2 !== o1) instant = new Date(guess.getTime() - o2);
+  return instant;
+}
+
+function setInputs(prefix, instant) {
+  const p = partsInZone(instant, ZONES[prefix]);
+  document.getElementById(`${prefix}-date`).value =
+    `${p.year.toString().padStart(4,"0")}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}`;
+  document.getElementById(`${prefix}-time`).value =
+    `${String(p.hour).padStart(2,"0")}:${String(p.minute).padStart(2,"0")}`;
+}
+
+function syncFrom(source) {
+  if (isSyncing) return;
+  isSyncing = true;
+  stopLive();
+
+  const dateVal = document.getElementById(`${source}-date`).value;
+  const timeVal = document.getElementById(`${source}-time`).value;
+  if (!dateVal || !timeVal) { isSyncing = false; return; }
+
+  currentInstant = zonedWallTimeToInstant(dateVal, timeVal, ZONES[source]);
+  Object.keys(ZONES).forEach(k => { if (k !== source) setInputs(k, currentInstant); });
+  updateClocksFromInstant(currentInstant);
+  isSyncing = false;
+}
+
+// ── Live tick ──────────────────────────────────────────────────────────────
+
+function startLive() {
+  if (liveTimer) return;
+  liveTimer = setInterval(() => {
+    currentInstant = new Date();
+    updateClocksFromInstant(currentInstant);
+  }, 1000);
+}
+
+function stopLive() {
+  if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+}
+
+// ── Input listeners ────────────────────────────────────────────────────────
+
+Object.keys(ZONES).forEach(k => {
+  document.getElementById(`${k}-date`).addEventListener("input", () => syncFrom(k));
+  document.getElementById(`${k}-time`).addEventListener("input", () => syncFrom(k));
+});
+
+// ── Reset ──────────────────────────────────────────────────────────────────
+
+function resetToNow() {
+  currentInstant = new Date();
+  isSyncing = true;
+  Object.keys(ZONES).forEach(k => setInputs(k, currentInstant));
+  isSyncing = false;
+  updateClocksFromInstant(currentInstant);
+  startLive();
+}
+
+// ── Keyboard shortcut: R ───────────────────────────────────────────────────
+
+document.addEventListener("keydown", e => {
+  if ((e.key === "r" || e.key === "R") && document.activeElement.tagName !== "INPUT") {
+    resetToNow();
+  }
+});
+
+// ── Copy time ─────────────────────────────────────────────────────────────
+
+function copyTime(key, btn) {
+  const text = new Intl.DateTimeFormat("en-US", {
+    timeZone: ZONES[key],
+    weekday: "short", month: "short", day: "numeric",
+    year: "numeric", hour: "numeric", minute: "2-digit",
+    hour12: true, timeZoneName: "short"
+  }).format(currentInstant);
+
+  const flash = () => {
+    const orig = btn.textContent;
+    btn.textContent = "✓";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 1500);
+  };
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(flash).catch(() => fallbackCopy(text, flash));
+  } else {
+    fallbackCopy(text, flash);
+  }
+}
+
+function fallbackCopy(text, callback) {
+  const ta = Object.assign(document.createElement("textarea"), {
+    value: text, style: "position:fixed;opacity:0"
+  });
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+  callback();
+}
+
+// ── Theme toggle ───────────────────────────────────────────────────────────
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle("light");
+  document.getElementById("theme-toggle").textContent = isLight ? "☾" : "☀";
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(function init() {
+  resetToNow();
+})();
+</script>
+</body>
+</html>
