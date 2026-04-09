@@ -135,7 +135,7 @@
     /* ── Input rows ── */
     .row {
       display: grid;
-      grid-template-columns: 120px 1fr 1fr 36px;
+      grid-template-columns: 120px 1fr 1fr;
       gap: 10px;
       align-items: center;
       margin-top: 14px;
@@ -360,7 +360,6 @@
       </label>
       <input type="date" id="syd-date">
       <input type="time" id="syd-time">
-      <button class="copy-btn" onclick="copyTime('syd', this)" title="Copy Sydney time">⎘</button>
     </div>
 
     <div class="row row-bris">
@@ -370,7 +369,6 @@
       </label>
       <input type="date" id="bris-date">
       <input type="time" id="bris-time">
-      <button class="copy-btn" onclick="copyTime('bris', this)" title="Copy Brisbane time">⎘</button>
     </div>
 
     <div class="row row-ind">
@@ -380,7 +378,6 @@
       </label>
       <input type="date" id="ind-date">
       <input type="time" id="ind-time">
-      <button class="copy-btn" onclick="copyTime('ind', this)" title="Copy India time">⎘</button>
     </div>
 
     <div class="row row-et">
@@ -390,7 +387,6 @@
       </label>
       <input type="date" id="et-date">
       <input type="time" id="et-time">
-      <button class="copy-btn" onclick="copyTime('et', this)" title="Copy Eastern time">⎘</button>
     </div>
 
     <div class="row row-ct">
@@ -400,12 +396,10 @@
       </label>
       <input type="date" id="ct-date">
       <input type="time" id="ct-time">
-      <button class="copy-btn" onclick="copyTime('ct', this)" title="Copy Central time">⎘</button>
     </div>
 
     <div class="footer-row">
       <button id="reset-btn" onclick="resetToNow()">⟳ Reset to Current Time</button>
-      <kbd title="Keyboard shortcut">R</kbd>
     </div>
 
   </div>
