@@ -78,8 +78,8 @@
     .clock-face    { fill: rgba(255,255,255,0.06); }
     .clock-tick-major { stroke: rgba(255,255,255,0.5); }
     .clock-tick-minor { stroke: rgba(255,255,255,0.25); }
-    .clock-hand-h  { stroke: #fff; }
-    .clock-hand-m  { stroke: #fff; }
+    .clock-hand-h  { stroke: #fff; transition: transform 0.4s cubic-bezier(0.4,2.1,0.6,1); }
+    .clock-hand-m  { stroke: #fff; transition: transform 0.4s cubic-bezier(0.4,2.1,0.6,1); }
 
     .clock-flag {
       font-size: 14px;
@@ -134,8 +134,9 @@
 
     /* ── Input rows ── */
     .row {
+      --accent: #4e9af1;
       display: grid;
-      grid-template-columns: 120px 1fr 1fr;
+      grid-template-columns: 120px 1fr 1fr auto;
       gap: 10px;
       align-items: center;
       margin-top: 14px;
@@ -150,6 +151,14 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 3px;
+      min-width: 0;
+    }
+    .zone-name {
+      color: var(--accent);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
     }
 
     .flag { font-size: 18px; margin-right: 6px; }
@@ -170,6 +179,7 @@
     /* ── Date/Time inputs ── */
     input[type="date"], input[type="time"] {
       width: 100%;
+      min-width: 0;
       padding: 10px 12px;
       font-size: 15px;
       font-family: inherit;
@@ -181,54 +191,97 @@
       transition: border-color 0.2s, background 0.2s;
       color-scheme: dark;
     }
-    input[type="date"]:focus, input[type="time"]:focus {
-      border-color: #4e9af1;
-      background: rgba(78,154,241,0.12);
+    .row input:focus {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
     }
-    .row-et    input:focus { border-color: #facc15; background: rgba(250,204,21,0.12); }
-    .row-ct    input:focus { border-color: #f87c52; background: rgba(248,124,82,0.12); }
-    .row-bris  input:focus { border-color: #52d18e; background: rgba(82,209,142,0.12); }
-    .row-syd   input:focus { border-color: #a78bfa; background: rgba(167,139,250,0.12); }
-    .row-ind   input:focus { border-color: #ff9933; background: rgba(255,153,51,0.12); }
 
-    .accent-et   { color: #facc15; }
-    .accent-ct   { color: #f87c52; }
-    .accent-bris { color: #52d18e; }
-    .accent-syd  { color: #a78bfa; }
-    .accent-ind  { color: #ff9933; }
-
-    /* ── Copy button ── */
-    .copy-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.55);
+    /* ── Per-row controls (move / remove) ── */
+    .row-controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .row-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.5);
       cursor: pointer;
-      font-size: 16px;
+      font-size: 12px;
+      line-height: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
       padding: 0;
-      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
-    .copy-btn:hover {
+    .row-btn:hover:not(:disabled) {
       background: rgba(255,255,255,0.14);
       color: rgba(255,255,255,0.9);
       border-color: rgba(255,255,255,0.3);
     }
-    .copy-btn.copied {
-      color: #52d18e;
-      border-color: rgba(82,209,142,0.5);
-      background: rgba(82,209,142,0.1);
+    .row-btn:disabled { opacity: 0.25; cursor: default; }
+    .row-btn.remove:hover:not(:disabled) {
+      color: #f87c52;
+      border-color: rgba(248,124,82,0.5);
+      background: rgba(248,124,82,0.12);
     }
+
+    /* ── Add-zone control ── */
+    .add-zone {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+      align-items: center;
+    }
+    .add-zone input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      color-scheme: dark;
+    }
+    .add-zone input[type="text"]:focus {
+      border-color: #4e9af1;
+      background: rgba(78,154,241,0.12);
+    }
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.85);
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .pill-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.35);
+    }
+    .add-zone.hidden { display: none; }
 
     /* ── Footer ── */
     .footer-row {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 10px;
       margin-top: 20px;
     }
@@ -263,6 +316,26 @@
       color: rgba(255,255,255,0.45);
     }
 
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .card { padding: 22px 18px 26px; margin: 12px; }
+      .row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "label   label"
+          "date    time"
+          "controls controls";
+        gap: 8px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+      .zone-label  { grid-area: label; flex-direction: row; align-items: center; gap: 8px; }
+      .row :nth-child(2) { grid-area: date; }
+      .row :nth-child(3) { grid-area: time; }
+      .row-controls { grid-area: controls; justify-content: flex-end; }
+      body.light .row { border-bottom-color: rgba(0,0,0,0.07); }
+    }
+
     /* ══════════════════════════════════════════
        LIGHT MODE
     ══════════════════════════════════════════ */
@@ -292,32 +365,30 @@
       color: rgba(0,0,0,0.52);
     }
     body.light input[type="date"],
-    body.light input[type="time"] {
+    body.light input[type="time"],
+    body.light .add-zone input[type="text"] {
       background: rgba(0,0,0,0.05);
       border-color: rgba(0,0,0,0.14);
       color: #1a1a2e;
       color-scheme: light;
     }
-    body.light .copy-btn {
-      border-color: rgba(0,0,0,0.14);
+    body.light .row-btn {
+      border-color: rgba(0,0,0,0.12);
       background: rgba(0,0,0,0.04);
       color: rgba(0,0,0,0.45);
     }
-    body.light .copy-btn:hover {
-      background: rgba(0,0,0,0.09);
+    body.light .row-btn:hover:not(:disabled) {
+      background: rgba(0,0,0,0.1);
       color: rgba(0,0,0,0.8);
       border-color: rgba(0,0,0,0.25);
     }
-    body.light .copy-btn.copied {
-      color: #2a9d5c;
-      border-color: rgba(42,157,92,0.5);
-      background: rgba(42,157,92,0.08);
-    }
+    body.light .pill-btn,
     body.light #reset-btn {
       border-color: rgba(0,0,0,0.18);
       background: rgba(0,0,0,0.05);
       color: rgba(0,0,0,0.75);
     }
+    body.light .pill-btn:hover,
     body.light #reset-btn:hover {
       background: rgba(0,0,0,0.1);
       border-color: rgba(0,0,0,0.28);
@@ -348,237 +419,151 @@
     <h2>Time Zone Sync</h2>
     <div class="muted">
       Edit <strong>any</strong> field — the others update instantly. DST handled correctly.
-      <br>Brisbane is always AEST (no DST); Sydney switches between AEDT/AEST.
+      <br>Add your own zones below; your list and theme are saved in this browser.
     </div>
 
     <hr class="divider">
 
-    <div class="row row-syd">
-      <label class="zone-label">
-        <div><span class="flag">🇦🇺</span><span class="accent-syd">Sydney</span></div>
-        <span class="dst-badge" id="dst-syd"></span>
-      </label>
-      <input type="date" id="syd-date">
-      <input type="time" id="syd-time">
-    </div>
+    <!-- Zone input rows are rendered here -->
+    <div id="rows"></div>
 
-    <div class="row row-bris">
-      <label class="zone-label">
-        <div><span class="flag">🇦🇺</span><span class="accent-bris">Brisbane</span></div>
-        <span class="dst-badge" id="dst-bris"></span>
-      </label>
-      <input type="date" id="bris-date">
-      <input type="time" id="bris-time">
-    </div>
-
-    <div class="row row-ind">
-      <label class="zone-label">
-        <div><span class="flag">🇮🇳</span><span class="accent-ind">India</span></div>
-        <span class="dst-badge" id="dst-ind"></span>
-      </label>
-      <input type="date" id="ind-date">
-      <input type="time" id="ind-time">
-    </div>
-
-    <div class="row row-et">
-      <label class="zone-label">
-        <div><span class="flag">🇺🇸</span><span class="accent-et">Eastern</span></div>
-        <span class="dst-badge" id="dst-et"></span>
-      </label>
-      <input type="date" id="et-date">
-      <input type="time" id="et-time">
-    </div>
-
-    <div class="row row-ct">
-      <label class="zone-label">
-        <div><span class="flag">🇺🇸</span><span class="accent-ct">Central</span></div>
-        <span class="dst-badge" id="dst-ct"></span>
-      </label>
-      <input type="date" id="ct-date">
-      <input type="time" id="ct-time">
+    <!-- Add-zone control -->
+    <div class="add-zone hidden" id="add-zone">
+      <input type="text" id="tz-input" list="tz-list" placeholder="Search a city / IANA zone, e.g. Europe/London">
+      <datalist id="tz-list"></datalist>
+      <button class="pill-btn" onclick="confirmAddZone()">Add</button>
+      <button class="pill-btn" onclick="toggleAddZone(false)">Cancel</button>
     </div>
 
     <div class="footer-row">
       <button id="reset-btn" onclick="resetToNow()">⟳ Reset to Current Time</button>
+      <button class="pill-btn" onclick="toggleAddZone(true)">+ Add zone</button>
     </div>
 
   </div>
 
 <script>
-const ZONES = {
-  syd:  "Australia/Sydney",
-  bris: "Australia/Brisbane",
-  ind:  "Asia/Kolkata",
-  et:   "America/New_York",
-  ct:   "America/Chicago"
-};
+// ── Defaults & data model ───────────────────────────────────────────────────
 
-const CLOCK_CONFIGS = [
-  { key: "syd",  label: "Sydney",   color: "#a78bfa", flag: "🇦🇺" },
-  { key: "bris", label: "Brisbane", color: "#52d18e", flag: "🇦🇺" },
-  { key: "ind",  label: "India",    color: "#ff9933", flag: "🇮🇳" },
-  { key: "et",   label: "Eastern",  color: "#facc15", flag: "🇺🇸" },
-  { key: "ct",   label: "Central",  color: "#f87c52", flag: "🇺🇸" },
+const DEFAULT_ZONES = [
+  { tz: "Australia/Sydney",   label: "Sydney",   color: "#a78bfa", flag: "🇦🇺" },
+  { tz: "Australia/Brisbane", label: "Brisbane", color: "#52d18e", flag: "🇦🇺" },
+  { tz: "Asia/Kolkata",       label: "India",    color: "#ff9933", flag: "🇮🇳" },
+  { tz: "America/New_York",   label: "Eastern",  color: "#facc15", flag: "🇺🇸" },
+  { tz: "America/Chicago",    label: "Central",  color: "#f87c52", flag: "🇺🇸" },
 ];
 
-// ── Analog clock construction ──────────────────────────────────────────────
+const PALETTE = [
+  "#a78bfa", "#52d18e", "#ff9933", "#facc15", "#f87c52",
+  "#4e9af1", "#f472b6", "#34d399", "#fb923c", "#c084fc",
+  "#22d3ee", "#e879f9",
+];
+
+// Curated IANA-zone → flag emoji. Falls back to "" (no flag) when unknown.
+const TZ_FLAG = {
+  "Australia/Sydney": "🇦🇺", "Australia/Brisbane": "🇦🇺", "Australia/Melbourne": "🇦🇺",
+  "Australia/Perth": "🇦🇺", "Australia/Adelaide": "🇦🇺",
+  "Asia/Kolkata": "🇮🇳", "Asia/Tokyo": "🇯🇵", "Asia/Shanghai": "🇨🇳",
+  "Asia/Hong_Kong": "🇭🇰", "Asia/Singapore": "🇸🇬", "Asia/Seoul": "🇰🇷",
+  "Asia/Dubai": "🇦🇪", "Asia/Jakarta": "🇮🇩", "Asia/Bangkok": "🇹🇭",
+  "Asia/Manila": "🇵🇭", "Asia/Karachi": "🇵🇰", "Asia/Jerusalem": "🇮🇱",
+  "America/New_York": "🇺🇸", "America/Chicago": "🇺🇸", "America/Denver": "🇺🇸",
+  "America/Los_Angeles": "🇺🇸", "America/Phoenix": "🇺🇸", "America/Anchorage": "🇺🇸",
+  "Pacific/Honolulu": "🇺🇸",
+  "America/Toronto": "🇨🇦", "America/Vancouver": "🇨🇦",
+  "America/Mexico_City": "🇲🇽", "America/Sao_Paulo": "🇧🇷",
+  "America/Argentina/Buenos_Aires": "🇦🇷", "America/Bogota": "🇨🇴",
+  "Europe/London": "🇬🇧", "Europe/Dublin": "🇮🇪", "Europe/Paris": "🇫🇷",
+  "Europe/Berlin": "🇩🇪", "Europe/Madrid": "🇪🇸", "Europe/Rome": "🇮🇹",
+  "Europe/Amsterdam": "🇳🇱", "Europe/Brussels": "🇧🇪", "Europe/Zurich": "🇨🇭",
+  "Europe/Stockholm": "🇸🇪", "Europe/Oslo": "🇳🇴", "Europe/Helsinki": "🇫🇮",
+  "Europe/Warsaw": "🇵🇱", "Europe/Lisbon": "🇵🇹", "Europe/Athens": "🇬🇷",
+  "Europe/Moscow": "🇷🇺", "Europe/Istanbul": "🇹🇷", "Europe/Kyiv": "🇺🇦",
+  "Africa/Johannesburg": "🇿🇦", "Africa/Cairo": "🇪🇬", "Africa/Lagos": "🇳🇬",
+  "Africa/Nairobi": "🇰🇪",
+  "Pacific/Auckland": "🇳🇿",
+};
+
+const STORAGE_KEY = "tzsync.zones.v1";
+const THEME_KEY   = "tzsync.theme";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const R = 36, SZ = 80, CX = SZ / 2, CY = SZ / 2;
 
-function svgEl(tag, attrs) {
-  const el = document.createElementNS(SVG_NS, tag);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  return el;
-}
+// Full IANA list for the picker (with a small fallback for old browsers).
+const ALL_TZS = (typeof Intl.supportedValuesOf === "function")
+  ? Intl.supportedValuesOf("timeZone")
+  : DEFAULT_ZONES.map(z => z.tz).concat([
+      "Europe/London", "Europe/Paris", "Europe/Berlin", "Asia/Tokyo",
+      "Asia/Shanghai", "America/Los_Angeles", "Pacific/Auckland", "UTC",
+    ]);
 
-function buildClock(cfg) {
-  const wrap = document.createElement("div");
-  wrap.className = "clock-item";
-
-  const svg = svgEl("svg", { width: SZ, height: SZ, viewBox: `0 0 ${SZ} ${SZ}` });
-
-  // Face
-  svg.appendChild(svgEl("circle", {
-    cx: CX, cy: CY, r: R,
-    class: "clock-face",
-    stroke: cfg.color, "stroke-width": "1.5"
-  }));
-
-  // Hour ticks
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * 2 * Math.PI;
-    const inner = i % 3 === 0 ? R - 7 : R - 5;
-    svg.appendChild(svgEl("line", {
-      class: i % 3 === 0 ? "clock-tick-major" : "clock-tick-minor",
-      x1: CX + inner * Math.sin(a),  y1: CY - inner * Math.cos(a),
-      x2: CX + R     * Math.sin(a),  y2: CY - R     * Math.cos(a),
-      "stroke-width": i % 3 === 0 ? "2" : "1",
-      "stroke-linecap": "round"
-    }));
-  }
-
-  // Hour hand
-  const hHand = svgEl("line", {
-    class: "clock-hand-h",
-    x1: CX, y1: CY, x2: CX, y2: CY - 20,
-    "stroke-width": "2.5", "stroke-linecap": "round"
-  });
-  hHand.id = `clk-h-${cfg.key}`;
-  svg.appendChild(hHand);
-
-  // Minute hand
-  const mHand = svgEl("line", {
-    class: "clock-hand-m",
-    x1: CX, y1: CY, x2: CX, y2: CY - 28,
-    "stroke-width": "1.5", "stroke-linecap": "round"
-  });
-  mHand.id = `clk-m-${cfg.key}`;
-  svg.appendChild(mHand);
-
-  // Second hand (accent colored — keeps inline stroke for per-clock color)
-  const sHand = svgEl("line", {
-    x1: CX, y1: CY + 8, x2: CX, y2: CY - 31,
-    stroke: cfg.color, "stroke-width": "1", "stroke-linecap": "round"
-  });
-  sHand.id = `clk-s-${cfg.key}`;
-  svg.appendChild(sHand);
-
-  // Center cap
-  svg.appendChild(svgEl("circle", { cx: CX, cy: CY, r: "3", fill: cfg.color }));
-
-  // Flag
-  const flagEl = document.createElement("div");
-  flagEl.className = "clock-flag";
-  flagEl.textContent = cfg.flag;
-
-  // Zone label
-  const labelEl = document.createElement("div");
-  labelEl.className = "clock-label";
-  labelEl.textContent = cfg.label;
-  labelEl.style.color = cfg.color;
-
-  // Live digital readout
-  const digitalEl = document.createElement("div");
-  digitalEl.className = "clock-digital";
-  digitalEl.id = `clk-digital-${cfg.key}`;
-  digitalEl.style.color = cfg.color;
-  digitalEl.textContent = "–:––:––";
-
-  // Date line
-  const dateEl = document.createElement("div");
-  dateEl.className = "clock-date";
-  dateEl.id = `clk-date-${cfg.key}`;
-  dateEl.textContent = "––– ––– ––";
-
-  wrap.appendChild(svg);
-  wrap.appendChild(flagEl);
-  wrap.appendChild(labelEl);
-  wrap.appendChild(digitalEl);
-  wrap.appendChild(dateEl);
-  return wrap;
-}
-
-// Build all clocks into the strip
-CLOCK_CONFIGS.forEach(cfg => {
-  document.getElementById("clock-strip").appendChild(buildClock(cfg));
-});
-
-// ── Clock hand + readout update ────────────────────────────────────────────
-
-function setHand(id, angleDeg) {
-  const el = document.getElementById(id);
-  if (el) el.setAttribute("transform", `rotate(${angleDeg}, ${CX}, ${CY})`);
-}
-
-function getTzAbbr(tz, instant) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: tz, timeZoneName: "short"
-  }).formatToParts(instant);
-  return parts.find(p => p.type === "timeZoneName")?.value ?? "";
-}
-
-function updateClocksFromInstant(instant) {
-  CLOCK_CONFIGS.forEach(cfg => {
-    const p = partsInZone(instant, ZONES[cfg.key]);
-
-    // Hands
-    const hAngle = ((p.hour % 12) + p.minute / 60 + p.second / 3600) / 12 * 360;
-    const mAngle = (p.minute + p.second / 60) / 60 * 360;
-    const sAngle = p.second / 60 * 360;
-    setHand(`clk-h-${cfg.key}`, hAngle);
-    setHand(`clk-m-${cfg.key}`, mAngle);
-    setHand(`clk-s-${cfg.key}`, sAngle);
-
-    // Digital readout (12h AM/PM)
-    const digitalEl = document.getElementById(`clk-digital-${cfg.key}`);
-    if (digitalEl) {
-      const hh12 = p.hour % 12 || 12;
-      const ampm = p.hour < 12 ? "AM" : "PM";
-      digitalEl.textContent =
-        `${hh12}:${String(p.minute).padStart(2,"0")}:${String(p.second).padStart(2,"0")} ${ampm}`;
-    }
-
-    // Date line
-    const dateEl = document.getElementById(`clk-date-${cfg.key}`);
-    if (dateEl) {
-      dateEl.textContent = new Intl.DateTimeFormat("en-US", {
-        timeZone: ZONES[cfg.key],
-        weekday: "short", month: "short", day: "numeric"
-      }).format(instant);
-    }
-
-    // DST badge in input rows
-    const dstEl = document.getElementById(`dst-${cfg.key}`);
-    if (dstEl) dstEl.textContent = getTzAbbr(ZONES[cfg.key], instant);
-  });
-}
-
-// ── Core time logic ────────────────────────────────────────────────────────
-
+let zones = [];
 let isSyncing = false;
 let currentInstant = new Date();
 let liveTimer = null;
+
+function makeId() {
+  return "z_" + Math.random().toString(36).slice(2, 9);
+}
+
+function defaultLabel(tz) {
+  return tz.split("/").pop().replace(/_/g, " ");
+}
+
+function flagForTz(tz) {
+  return TZ_FLAG[tz] || "";
+}
+
+function nextColor() {
+  // Pick the palette color least used among the current zones.
+  const counts = PALETTE.map(c => zones.filter(z => z.color === c).length);
+  return PALETTE[counts.indexOf(Math.min(...counts))];
+}
+
+function isValidTz(tz) {
+  try { new Intl.DateTimeFormat("en", { timeZone: tz }); return true; }
+  catch { return false; }
+}
+
+// ── Persistence ──────────────────────────────────────────────────────────────
+
+function seedDefaults() {
+  return DEFAULT_ZONES.map(z => ({ ...z, id: makeId() }));
+}
+
+function save() {
+  try {
+    const data = {
+      v: 1,
+      zones: zones.map(({ id, tz, label, color, flag }) => ({ id, tz, label, color, flag })),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) { /* private mode / quota — keep running in-memory */ }
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return seedDefaults();
+    const data = JSON.parse(raw);
+    if (!data || data.v !== 1 || !Array.isArray(data.zones) || !data.zones.length)
+      return seedDefaults();
+    const valid = data.zones.filter(z => z && typeof z.tz === "string" && isValidTz(z.tz));
+    if (!valid.length) return seedDefaults();
+    return valid.map(z => ({
+      id:    z.id || makeId(),
+      tz:    z.tz,
+      label: z.label || defaultLabel(z.tz),
+      color: z.color || PALETTE[0],
+      flag:  z.flag ?? flagForTz(z.tz),
+    }));
+  } catch (e) {
+    return seedDefaults();
+  }
+}
+
+// ── Pure time logic (DST-critical — unchanged) ───────────────────────────────
 
 function partsInZone(date, tz) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -610,11 +595,233 @@ function zonedWallTimeToInstant(dateStr, timeStr, tz) {
   return instant;
 }
 
-function setInputs(prefix, instant) {
-  const p = partsInZone(instant, ZONES[prefix]);
-  document.getElementById(`${prefix}-date`).value =
+function getTzAbbr(tz, instant) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, timeZoneName: "short"
+  }).formatToParts(instant);
+  return parts.find(p => p.type === "timeZoneName")?.value ?? "";
+}
+
+// ── DOM builders ─────────────────────────────────────────────────────────────
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function buildClock(z) {
+  const wrap = document.createElement("div");
+  wrap.className = "clock-item";
+
+  const svg = svgEl("svg", { width: SZ, height: SZ, viewBox: `0 0 ${SZ} ${SZ}` });
+
+  // Face
+  svg.appendChild(svgEl("circle", {
+    cx: CX, cy: CY, r: R,
+    class: "clock-face",
+    stroke: z.color, "stroke-width": "1.5"
+  }));
+
+  // Hour ticks
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * 2 * Math.PI;
+    const inner = i % 3 === 0 ? R - 7 : R - 5;
+    svg.appendChild(svgEl("line", {
+      class: i % 3 === 0 ? "clock-tick-major" : "clock-tick-minor",
+      x1: CX + inner * Math.sin(a),  y1: CY - inner * Math.cos(a),
+      x2: CX + R     * Math.sin(a),  y2: CY - R     * Math.cos(a),
+      "stroke-width": i % 3 === 0 ? "2" : "1",
+      "stroke-linecap": "round"
+    }));
+  }
+
+  // Hour hand
+  z.handH = svgEl("line", {
+    class: "clock-hand-h",
+    x1: CX, y1: CY, x2: CX, y2: CY - 20,
+    "stroke-width": "2.5", "stroke-linecap": "round"
+  });
+  svg.appendChild(z.handH);
+
+  // Minute hand
+  z.handM = svgEl("line", {
+    class: "clock-hand-m",
+    x1: CX, y1: CY, x2: CX, y2: CY - 28,
+    "stroke-width": "1.5", "stroke-linecap": "round"
+  });
+  svg.appendChild(z.handM);
+
+  // Second hand (accent colored)
+  z.handS = svgEl("line", {
+    x1: CX, y1: CY + 8, x2: CX, y2: CY - 31,
+    stroke: z.color, "stroke-width": "1", "stroke-linecap": "round"
+  });
+  svg.appendChild(z.handS);
+
+  // Center cap
+  svg.appendChild(svgEl("circle", { cx: CX, cy: CY, r: "3", fill: z.color }));
+
+  // Flag
+  const flagEl = document.createElement("div");
+  flagEl.className = "clock-flag";
+  flagEl.textContent = z.flag;
+
+  // Zone label
+  const labelEl = document.createElement("div");
+  labelEl.className = "clock-label";
+  labelEl.textContent = z.label;
+  labelEl.style.color = z.color;
+
+  // Live digital readout
+  z.digitalEl = document.createElement("div");
+  z.digitalEl.className = "clock-digital";
+  z.digitalEl.style.color = z.color;
+  z.digitalEl.textContent = "–:––:––";
+
+  // Date line
+  z.dateLineEl = document.createElement("div");
+  z.dateLineEl.className = "clock-date";
+  z.dateLineEl.textContent = "––– ––– ––";
+
+  wrap.appendChild(svg);
+  wrap.appendChild(flagEl);
+  wrap.appendChild(labelEl);
+  wrap.appendChild(z.digitalEl);
+  wrap.appendChild(z.dateLineEl);
+  z.clockEl = wrap;
+  return wrap;
+}
+
+function buildRow(z) {
+  const row = document.createElement("div");
+  row.className = "row";
+  row.style.setProperty("--accent", z.color);
+
+  // Label (flag + name) + DST badge
+  const label = document.createElement("label");
+  label.className = "zone-label";
+  const nameLine = document.createElement("div");
+  const flagSpan = document.createElement("span");
+  flagSpan.className = "flag";
+  flagSpan.textContent = z.flag;
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "zone-name";
+  nameSpan.textContent = z.label;
+  nameSpan.title = z.tz;
+  nameLine.appendChild(flagSpan);
+  nameLine.appendChild(nameSpan);
+  z.dstEl = document.createElement("span");
+  z.dstEl.className = "dst-badge";
+  label.appendChild(nameLine);
+  label.appendChild(z.dstEl);
+
+  // Date / time inputs
+  z.dateEl = document.createElement("input");
+  z.dateEl.type = "date";
+  z.timeEl = document.createElement("input");
+  z.timeEl.type = "time";
+  z.dateEl.addEventListener("input", () => syncFrom(z));
+  z.timeEl.addEventListener("input", () => syncFrom(z));
+
+  // Controls (move up / down / remove)
+  const controls = document.createElement("div");
+  controls.className = "row-controls";
+  const i = zones.indexOf(z);
+  const upBtn = document.createElement("button");
+  upBtn.className = "row-btn";
+  upBtn.textContent = "▲";
+  upBtn.title = "Move up";
+  upBtn.disabled = i === 0;
+  upBtn.addEventListener("click", () => moveZone(z.id, -1));
+  const downBtn = document.createElement("button");
+  downBtn.className = "row-btn";
+  downBtn.textContent = "▼";
+  downBtn.title = "Move down";
+  downBtn.disabled = i === zones.length - 1;
+  downBtn.addEventListener("click", () => moveZone(z.id, 1));
+  const rmBtn = document.createElement("button");
+  rmBtn.className = "row-btn remove";
+  rmBtn.textContent = "✕";
+  rmBtn.title = "Remove zone";
+  rmBtn.disabled = zones.length <= 1;
+  rmBtn.addEventListener("click", () => removeZone(z.id));
+  controls.appendChild(upBtn);
+  controls.appendChild(downBtn);
+  controls.appendChild(rmBtn);
+
+  row.appendChild(label);
+  row.appendChild(z.dateEl);
+  row.appendChild(z.timeEl);
+  row.appendChild(controls);
+  z.rowEl = row;
+  return row;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+
+function render() {
+  const strip = document.getElementById("clock-strip");
+  const rows  = document.getElementById("rows");
+  strip.replaceChildren();
+  rows.replaceChildren();
+  zones.forEach(z => {
+    strip.appendChild(buildClock(z));
+    rows.appendChild(buildRow(z));
+  });
+  // Re-apply current instant to the freshly built DOM.
+  isSyncing = true;
+  zones.forEach(z => setInputs(z, currentInstant));
+  isSyncing = false;
+  updateClocksFromInstant(currentInstant);
+}
+
+// ── Clock hand + readout update ──────────────────────────────────────────────
+
+function setHand(el, angleDeg) {
+  if (el) el.setAttribute("transform", `rotate(${angleDeg}, ${CX}, ${CY})`);
+}
+
+function updateClocksFromInstant(instant) {
+  zones.forEach(z => {
+    const p = partsInZone(instant, z.tz);
+
+    // Hands
+    const hAngle = ((p.hour % 12) + p.minute / 60 + p.second / 3600) / 12 * 360;
+    const mAngle = (p.minute + p.second / 60) / 60 * 360;
+    const sAngle = p.second / 60 * 360;
+    setHand(z.handH, hAngle);
+    setHand(z.handM, mAngle);
+    setHand(z.handS, sAngle);
+
+    // Digital readout (12h AM/PM)
+    if (z.digitalEl) {
+      const hh12 = p.hour % 12 || 12;
+      const ampm = p.hour < 12 ? "AM" : "PM";
+      z.digitalEl.textContent =
+        `${hh12}:${String(p.minute).padStart(2,"0")}:${String(p.second).padStart(2,"0")} ${ampm}`;
+    }
+
+    // Date line
+    if (z.dateLineEl) {
+      z.dateLineEl.textContent = new Intl.DateTimeFormat("en-US", {
+        timeZone: z.tz,
+        weekday: "short", month: "short", day: "numeric"
+      }).format(instant);
+    }
+
+    // DST badge
+    if (z.dstEl) z.dstEl.textContent = getTzAbbr(z.tz, instant);
+  });
+}
+
+// ── Sync ─────────────────────────────────────────────────────────────────────
+
+function setInputs(z, instant) {
+  const p = partsInZone(instant, z.tz);
+  z.dateEl.value =
     `${p.year.toString().padStart(4,"0")}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}`;
-  document.getElementById(`${prefix}-time`).value =
+  z.timeEl.value =
     `${String(p.hour).padStart(2,"0")}:${String(p.minute).padStart(2,"0")}`;
 }
 
@@ -623,17 +830,17 @@ function syncFrom(source) {
   isSyncing = true;
   stopLive();
 
-  const dateVal = document.getElementById(`${source}-date`).value;
-  const timeVal = document.getElementById(`${source}-time`).value;
+  const dateVal = source.dateEl.value;
+  const timeVal = source.timeEl.value;
   if (!dateVal || !timeVal) { isSyncing = false; return; }
 
-  currentInstant = zonedWallTimeToInstant(dateVal, timeVal, ZONES[source]);
-  Object.keys(ZONES).forEach(k => { if (k !== source) setInputs(k, currentInstant); });
+  currentInstant = zonedWallTimeToInstant(dateVal, timeVal, source.tz);
+  zones.forEach(z => { if (z !== source) setInputs(z, currentInstant); });
   updateClocksFromInstant(currentInstant);
   isSyncing = false;
 }
 
-// ── Live tick ──────────────────────────────────────────────────────────────
+// ── Live tick ────────────────────────────────────────────────────────────────
 
 function startLive() {
   if (liveTimer) return;
@@ -647,25 +854,73 @@ function stopLive() {
   if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
 }
 
-// ── Input listeners ────────────────────────────────────────────────────────
+// ── Zone management ──────────────────────────────────────────────────────────
 
-Object.keys(ZONES).forEach(k => {
-  document.getElementById(`${k}-date`).addEventListener("input", () => syncFrom(k));
-  document.getElementById(`${k}-time`).addEventListener("input", () => syncFrom(k));
-});
+function addZone(tz) {
+  if (!isValidTz(tz)) return false;
+  zones.push({
+    id: makeId(),
+    tz,
+    label: defaultLabel(tz),
+    color: nextColor(),
+    flag: flagForTz(tz),
+  });
+  save();
+  render();
+  return true;
+}
 
-// ── Reset ──────────────────────────────────────────────────────────────────
+function removeZone(id) {
+  if (zones.length <= 1) return;
+  zones = zones.filter(z => z.id !== id);
+  save();
+  render();
+}
+
+function moveZone(id, dir) {
+  const i = zones.findIndex(z => z.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= zones.length) return;
+  [zones[i], zones[j]] = [zones[j], zones[i]];
+  save();
+  render();
+}
+
+// ── Add-zone UI ──────────────────────────────────────────────────────────────
+
+function toggleAddZone(show) {
+  const box = document.getElementById("add-zone");
+  box.classList.toggle("hidden", !show);
+  if (show) {
+    const input = document.getElementById("tz-input");
+    input.value = "";
+    input.focus();
+  }
+}
+
+function confirmAddZone() {
+  const input = document.getElementById("tz-input");
+  const tz = input.value.trim();
+  if (addZone(tz)) {
+    toggleAddZone(false);
+  } else {
+    input.focus();
+    input.select();
+  }
+}
+
+// ── Reset ────────────────────────────────────────────────────────────────────
 
 function resetToNow() {
   currentInstant = new Date();
   isSyncing = true;
-  Object.keys(ZONES).forEach(k => setInputs(k, currentInstant));
+  zones.forEach(z => setInputs(z, currentInstant));
   isSyncing = false;
   updateClocksFromInstant(currentInstant);
   startLive();
 }
 
-// ── Keyboard shortcut: R ───────────────────────────────────────────────────
+// ── Keyboard shortcut: R ─────────────────────────────────────────────────────
 
 document.addEventListener("keydown", e => {
   if ((e.key === "r" || e.key === "R") && document.activeElement.tagName !== "INPUT") {
@@ -673,50 +928,46 @@ document.addEventListener("keydown", e => {
   }
 });
 
-// ── Copy time ─────────────────────────────────────────────────────────────
+// ── Theme ────────────────────────────────────────────────────────────────────
 
-function copyTime(key, btn) {
-  const text = new Intl.DateTimeFormat("en-US", {
-    timeZone: ZONES[key],
-    weekday: "short", month: "short", day: "numeric",
-    year: "numeric", hour: "numeric", minute: "2-digit",
-    hour12: true, timeZoneName: "short"
-  }).format(currentInstant);
+function applyTheme(theme) {
+  const light = theme === "light";
+  document.body.classList.toggle("light", light);
+  document.getElementById("theme-toggle").textContent = light ? "☾" : "☀";
+}
 
-  const flash = () => {
-    const orig = btn.textContent;
-    btn.textContent = "✓";
-    btn.classList.add("copied");
-    setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 1500);
-  };
-
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(flash).catch(() => fallbackCopy(text, flash));
-  } else {
-    fallbackCopy(text, flash);
+function initTheme() {
+  let theme = null;
+  try { theme = localStorage.getItem(THEME_KEY); } catch {}
+  if (theme !== "light" && theme !== "dark") {
+    theme = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
   }
+  applyTheme(theme);
 }
-
-function fallbackCopy(text, callback) {
-  const ta = Object.assign(document.createElement("textarea"), {
-    value: text, style: "position:fixed;opacity:0"
-  });
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand("copy");
-  document.body.removeChild(ta);
-  callback();
-}
-
-// ── Theme toggle ───────────────────────────────────────────────────────────
 
 function toggleTheme() {
-  const isLight = document.body.classList.toggle("light");
-  document.getElementById("theme-toggle").textContent = isLight ? "☾" : "☀";
+  const light = !document.body.classList.contains("light");
+  applyTheme(light ? "light" : "dark");
+  try { localStorage.setItem(THEME_KEY, light ? "light" : "dark"); } catch {}
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
+// ── Init ─────────────────────────────────────────────────────────────────────
+
 (function init() {
+  // Populate the timezone picker datalist once.
+  const list = document.getElementById("tz-list");
+  const frag = document.createDocumentFragment();
+  ALL_TZS.forEach(tz => {
+    const opt = document.createElement("option");
+    opt.value = tz;
+    frag.appendChild(opt);
+  });
+  list.appendChild(frag);
+
+  initTheme();
+  zones = load();
+  render();
   resetToNow();
 })();
 </script>
