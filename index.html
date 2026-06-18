@@ -60,12 +60,12 @@
 
     /* ── Analog clock strip ── */
     .clock-strip {
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-start;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+      justify-items: center;
+      align-items: start;
       margin-bottom: 22px;
-      flex-wrap: wrap;
-      gap: 6px;
+      gap: 14px 6px;
     }
 
     .clock-item {
@@ -73,7 +73,9 @@
       flex-direction: column;
       align-items: center;
       gap: 4px;
+      text-align: center;
     }
+    .clock-item svg { width: 80px; height: 80px; }
 
     .clock-face    { fill: rgba(255,255,255,0.06); }
     .clock-tick-major { stroke: rgba(255,255,255,0.5); }
@@ -317,23 +319,44 @@
     }
 
     /* ── Responsive ── */
-    @media (max-width: 480px) {
-      .card { padding: 22px 18px 26px; margin: 12px; }
+    @media (max-width: 560px) {
+      .card { padding: 20px 16px 24px; margin: 10px; border-radius: 16px; }
+      h2 { font-size: 20px; }
+
+      .clock-item svg { width: 62px; height: 62px; }
+      .clock-digital { font-size: 10px; }
+
       .row {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
-          "label   label"
-          "date    time"
-          "controls controls";
-        gap: 8px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.07);
+          "label    controls"
+          "date     time";
+        column-gap: 10px;
+        row-gap: 8px;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,255,255,0.08);
       }
-      .zone-label  { grid-area: label; flex-direction: row; align-items: center; gap: 8px; }
+      .row:first-of-type { border-top: none; padding-top: 0; }
+      .zone-label {
+        grid-area: label;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
       .row :nth-child(2) { grid-area: date; }
       .row :nth-child(3) { grid-area: time; }
-      .row-controls { grid-area: controls; justify-content: flex-end; }
-      body.light .row { border-bottom-color: rgba(0,0,0,0.07); }
+      .row-controls { grid-area: controls; justify-content: flex-end; align-self: center; }
+      .row input[type="date"], .row input[type="time"] {
+        padding: 9px 8px;
+        font-size: 14px;
+      }
+
+      .add-zone { flex-wrap: wrap; }
+      .add-zone input[type="text"] { flex: 1 1 100%; }
+
+      body.light .row { border-top-color: rgba(0,0,0,0.08); }
     }
 
     /* ══════════════════════════════════════════
